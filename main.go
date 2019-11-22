@@ -137,8 +137,16 @@ func getHTTPBanner(url string) {
 		log.Fatal(err)
 	}
 
-	title := htmlquery.FindOne(doc, `/html/head/title/text()`)
-	fmt.Printf("[+] %s: %s\n", url, htmlquery.InnerText(title))
+	titles, err := htmlquery.QueryAll(doc, `/html/head/title/text()`)
+	if err != nil {
+		panic(`not a valid XPath expression.`)
+	}
+
+	for _, title := range titles {
+		fmt.Printf("[+] %s: %s\n", url, htmlquery.InnerText(title))
+	}
+
+	// fmt.Printf("[+] %s: %s\n", url, htmlquery.InnerText(title))
 	// return htmlquery.InnerText(title)
 }
 
@@ -172,7 +180,6 @@ func run(ip string, port int, ch chan bool) {
 	if scanPorst(ip, port) {
 		url := fmt.Sprintf("http://%s:%d", ip, port)
 		getHTTPBanner(url)
-		// fmt.Println(banner)
 	}
 	ch <- true
 }
@@ -182,12 +189,16 @@ func checkTarget(target string, startPort int, endPort int) {
 	// 生成port切片
 	ch := make(chan bool)
 	ports := getPorts(startPort, endPort)
+	ipSize := 1
 
 	if strings.Contains(target, "/") {
 		// C段查询
 		ipSlice := cidr2IPs(target)
+		ipSize = len(ipSlice) - 2
 		for _, ip := range ipSlice[1 : len(ipSlice)-1] {
-			fmt.Println(ip)
+			for _, port := range ports {
+				go run(ip, port, ch)
+			}
 		}
 
 	} else if strings.Contains(target, "-") {
@@ -199,12 +210,13 @@ func checkTarget(target string, startPort int, endPort int) {
 	} else {
 		// 单个IP
 		for _, port := range ports[0:len(ports)] {
-			// fmt.Println(port)
 			go run(target, port, ch)
 		}
 	}
 
-	for i := 0; i < len(ports); i++ {
+	scanSize := ipSize * len(ports) // 扫描的所有IP*Port
+
+	for i := 0; i < scanSize; i++ {
 		<-ch
 	}
 }
