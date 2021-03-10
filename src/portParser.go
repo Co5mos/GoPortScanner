@@ -1,4 +1,4 @@
-package main
+package src
 
 import (
 	"strconv"
@@ -14,7 +14,7 @@ func (t *Target) ParsePort(port string) []int {
 		p, err := strconv.Atoi(ps)
 		if err == nil {
 			// 单个 port 直接加入切片
-			t.port = append(t.port, p)
+			t.Port = append(t.Port, p)
 
 		} else if strings.Contains(ps, "-") {
 			// 80-90
@@ -22,7 +22,7 @@ func (t *Target) ParsePort(port string) []int {
 
 			// 解析错误，返回空切片
 			if len(pp) < 2 {
-				return t.port
+				return t.Port
 			}
 
 			pstart, err := strconv.Atoi(pp[0])
@@ -36,10 +36,10 @@ func (t *Target) ParsePort(port string) []int {
 			}
 
 			for i := pstart; i <= pend; i++ {
-				t.port = append(t.port, i)
+				t.Port = append(t.Port, i)
 			}
 		}
 	}
 
-	return t.port
+	return t.Port
 }

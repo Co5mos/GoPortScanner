@@ -1,26 +1,29 @@
 package main
 
-type Target struct {
-	ip   []string
-	port []int
-}
+import (
+	"GoPortScanner/src"
+)
 
 func main() {
-	var opts *ConfigOptions
-	var t Target
-	var err error
-	var c chan bool
+	var (
+		opts *src.ConfigOptions
+		t    src.Target
+		err  error
+		c    chan bool
+	)
 
-	opts, err = ParseFlags(opts)
+	opts = new(src.ConfigOptions)
+
+	opts, err = src.ParseFlags(opts)
 	if err != nil {
 		panic(err)
 	}
 
-	t.ip = t.ParseIP(opts.ip)
-	t.port = t.ParsePort(opts.port)
+	t.Ip = t.ParseIP(opts.Ip)
+	t.Port = t.ParsePort(opts.Port)
 
-	for _, i := range t.ip {
-		for _, p := range t.port {
+	for _, i := range t.Ip {
+		for _, p := range t.Port {
 			t.Run(i, p, c)
 		}
 	}

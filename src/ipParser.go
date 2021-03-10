@@ -1,4 +1,4 @@
-package main
+package src
 
 import (
 	"log"
@@ -87,20 +87,20 @@ func (t *Target) ParseIP(ip string) []string {
 		// C段查询
 		ipSlice := t.CidrToIPs(ip)
 		for _, ip := range ipSlice[1 : len(ipSlice)-1] {
-			t.ip = append(t.ip, ip)
+			t.Ip = append(t.Ip, ip)
 		}
 
 	} else if strings.Contains(ip, "-") {
 		// IP段查询
 		ipSlice := t.SegmentToIPs(ip)
 		for _, ip := range ipSlice[1 : len(ipSlice)-1] {
-			t.ip = append(t.ip, ip)
+			t.Ip = append(t.Ip, ip)
 		}
 
 	} else {
 		// 单个IP
-		t.ip = append(t.ip, ip)
+		t.Ip = append(t.Ip, ip)
 	}
 
-	return t.ip
+	return t.Ip
 }
