@@ -14,17 +14,26 @@ const (
 )
 
 // 判断是否为IP地址
-func IsIPAddr(ip string) bool {
+func (t *Target) IsIPAddr(ip string) bool {
 	match, _ := regexp.MatchString(IPRegex, ip)
 	return match
 }
 
+func increment(ip net.IP) {
+	for i := len(ip) - 1; i >= 0; i-- {
+		ip[i]++
+		if ip[i] != 0 {
+			break
+		}
+	}
+}
+
 // C段转ip
-func CidrToIPs(cidr string) []string {
+func (t *Target) CidrToIPs(cidr string) []string {
 	var ips []string
 
 	// if a IP address, display the IP address and return
-	if IsIPAddr(cidr) {
+	if t.IsIPAddr(cidr) {
 		log.Print("go run main.go 192.168.30.2 21 8080")
 		os.Exit(1)
 	}
@@ -49,11 +58,11 @@ func CidrToIPs(cidr string) []string {
 }
 
 // IP 段转 IP 列表
-func Segment2IPs(segment string) []string {
+func (t *Target) SegmentToIPs(segment string) []string {
 	var ips []string
 
 	// if a IP address, display the IP address and return
-	if IsIPAddr(segment) {
+	if t.IsIPAddr(segment) {
 		log.Print("go run main.go 192.168.30.2 21 8080")
 		os.Exit(1)
 	}
@@ -70,4 +79,28 @@ func Segment2IPs(segment string) []string {
 	}
 
 	return ips
+}
+
+// 解析 IP 参数
+func (t *Target) ParseIP(ip string) []string {
+	if strings.Contains(ip, "/") {
+		// C段查询
+		ipSlice := t.CidrToIPs(ip)
+		for _, ip := range ipSlice[1 : len(ipSlice)-1] {
+			t.ip = append(t.ip, ip)
+		}
+
+	} else if strings.Contains(ip, "-") {
+		// IP段查询
+		ipSlice := t.SegmentToIPs(ip)
+		for _, ip := range ipSlice[1 : len(ipSlice)-1] {
+			t.ip = append(t.ip, ip)
+		}
+
+	} else {
+		// 单个IP
+		t.ip = append(t.ip, ip)
+	}
+
+	return t.ip
 }
